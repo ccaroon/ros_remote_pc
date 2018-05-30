@@ -1,0 +1,45 @@
+---
+
+-   name: Set up ROS Remote PC Environment
+    hosts: ros
+    become: yes
+
+    vars:
+        user: ccaroon
+
+    tasks:
+
+        - name: Add "{{ user }}" user
+          user:
+              name: "{{ user }}"
+              state: present
+
+        - name: Add SSH Key
+          authorized_key:
+              user: "{{ user }}"
+              key: "{{ lookup('file', '/home/' + user + '/.ssh/id_rsa.pub') }}"
+
+        - name: Add User to sudoers
+          template:
+              src: files/user.sudoers
+              dest: "/etc/sudoers.d/{{ user }}"
+              owner: root
+              group: root
+              mode: 0440
+
+        - name: Create ROS scripts dir
+          file:
+              path: "/home/{{ user }}/ros/scripts"
+              owner: "{{ user }}"
+              state: directory
+
+        - name: Copy ROS setup scripts
+          copy:
+              src: "files/{{ item }}"
+              dest: "/home/{{ user }}/ros/scripts"
+              owner: "{{ user }}"
+              mode: 0755
+          with_items:
+              - 1_install_ros.sh
+              - 2_install_deps.sh
+              - 3_build.sh
