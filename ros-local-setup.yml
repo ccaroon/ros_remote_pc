@@ -12,6 +12,7 @@
         - name: Add "{{ user }}" user
           user:
               name: "{{ user }}"
+              shell: /bin/bash
               state: present
 
         - name: Add SSH Key
